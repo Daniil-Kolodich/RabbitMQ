@@ -15,6 +15,7 @@ builder.Services.AddLogging(cfg => cfg.AddConsole());
 builder.Services.Configure<LoggerFilterOptions>(cfg => cfg.MinLevel = LogLevel.Information);
 
 builder.Services.AddTransient<IPublisherService, PublisherService>();
+
 builder.Services.AddSingleton<IConnection>(_ =>
 {
     var factory = new ConnectionFactory
@@ -26,6 +27,12 @@ builder.Services.AddSingleton<IConnection>(_ =>
     };
     
     return factory.CreateConnection();
+});
+builder.Services.AddScoped<IModel>(services =>
+{
+    var factory = services.GetRequiredService<IConnection>();
+    
+    return factory.CreateModel();
 });
 
 var app = builder.Build();
