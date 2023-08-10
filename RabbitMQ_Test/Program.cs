@@ -1,3 +1,4 @@
+using RabbitMQ_Test.Consumers;
 using RabbitMQ_Test.RabbitMQ;
 using RabbitMQ_Test.RabbitMQ.Concrete;
 using RabbitMQ.Client;
@@ -23,7 +24,8 @@ builder.Services.AddSingleton<IConnection>(_ =>
         HostName = "localhost",
         Password = "1111",
         UserName = "danon",
-        Port = 5672
+        Port = 5672,
+        DispatchConsumersAsync = true
     };
     
     return factory.CreateConnection();
@@ -31,10 +33,15 @@ builder.Services.AddSingleton<IConnection>(_ =>
 builder.Services.AddScoped<IModel>(services =>
 {
     var factory = services.GetRequiredService<IConnection>();
+    var logger = services.GetRequiredService<ILogger<Program>>();
+    
+    logger.LogInformation("New channel created");
     
     return factory.CreateModel();
 });
 
+builder.Services.AddHostedService<ConsumersBackgroundService>();
+builder.Services.AddScoped<UserRegisteredConsumer>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
